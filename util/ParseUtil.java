@@ -49,7 +49,7 @@ public class ParseUtil {
     }
 
 
-    public static Capture parseSingle(PatternBuilder patternBuilder, TokenGenerator tokenGenerator, String patternName) throws TokenException, ParserException {
+    public static Capture parseSingle(PatternBuilder patternBuilder, TokenGenerator tokenGenerator, String patternName) throws TokenException, ParserException, AmbiguityException {
         List<Capture> captures = ParseUtil.parse(patternBuilder, tokenGenerator, patternName);
 
         if (captures == null) {
@@ -66,29 +66,43 @@ public class ParseUtil {
         }
         else {
             // ambiguous syntax
-            StringBuilder errorBuilder = new StringBuilder("Ambiguous syntax detected: multiple parse results returned\n\n");
+            throw new AmbiguityException(captures);
+        }
+    }
+
+    public static Capture parseSingle(PatternBuilder patternBuilder, TokenGenerator tokenGenerator) throws TokenException, ParserException, AmbiguityException {
+        return parseSingle(patternBuilder, tokenGenerator, null);
+    }
+
+    public static Capture parseSingle(Source source, PatternBuilder patternBuilder, String patternName) throws TokenException, ParserException, AmbiguityException {
+        return parseSingle(patternBuilder, new DefaultTokenGenerator(source, patternBuilder.getKeywords()), patternName);
+    }
+
+    public static Capture parseSingle(Source source, PatternBuilder patternBuilder) throws TokenException, ParserException, AmbiguityException {
+        return parseSingle(source, patternBuilder, null);
+    }
+
+
+    public static class AmbiguityException extends Exception {
+        private final List<Capture> results;
+
+        public AmbiguityException(List<Capture> results) {
+            super(getMessage(results));
+            this.results = results;
+        }
+
+        private static String getMessage(List<Capture> captures) {
+            StringBuilder errorBuilder = new StringBuilder("Ambiguous syntax detected: multiple parse results returned");
             int i = 0;
 
             for (Capture result : captures) {
-                errorBuilder.append("Result ");
+                errorBuilder.append("\n\nResult ");
                 errorBuilder.append(++i);
                 errorBuilder.append(":\n\t");
                 errorBuilder.append(result.toString().replace("\n", "\n\t"));
             }
 
-            throw new Error(errorBuilder.toString());
+            return errorBuilder.toString();
         }
-    }
-
-    public static Capture parseSingle(PatternBuilder patternBuilder, TokenGenerator tokenGenerator) throws TokenException, ParserException {
-        return parseSingle(patternBuilder, tokenGenerator, null);
-    }
-
-    public static Capture parseSingle(Source source, PatternBuilder patternBuilder, String patternName) throws TokenException, ParserException {
-        return parseSingle(patternBuilder, new DefaultTokenGenerator(source, patternBuilder.getKeywords()), patternName);
-    }
-
-    public static Capture parseSingle(Source source, PatternBuilder patternBuilder) throws TokenException, ParserException {
-        return parseSingle(source, patternBuilder, null);
     }
 }
