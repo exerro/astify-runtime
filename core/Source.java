@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import static java.util.Objects.hash;
+
 public abstract class Source {
     public abstract String getName();
     public abstract String getContent();
@@ -71,6 +73,10 @@ public abstract class Source {
             FileSource otherCasted = (FileSource) other;
             return otherCasted.fileName.equals(fileName) && otherCasted.filePath.equals(filePath);
         }
+
+        @Override public int hashCode() {
+            return hash(fileName, filePath);
+        }
     }
 
     public static class VirtualSource extends Source {
@@ -96,6 +102,10 @@ public abstract class Source {
             if (!(other instanceof VirtualSource)) return false;
             VirtualSource otherCasted = (VirtualSource) other;
             return otherCasted.name.equals(name) && otherCasted.content.equals(content);
+        }
+
+        @Override public int hashCode() {
+            return hash(name, content);
         }
     }
 

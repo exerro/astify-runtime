@@ -10,6 +10,7 @@ import java.util.*;
 public abstract class MultiSourceParser<T extends Capture.ObjectCapture> {
     private final Map<Source, T> parsed = new HashMap<>();
     private final List<Source> additionList = new LinkedList<>();
+    private final Map<Source, Set<Source>> importMapping = new HashMap<>();
     private int firstUnresolved = 0;
 
     private final List<Exception> exceptions = new ArrayList<>();
@@ -28,10 +29,19 @@ public abstract class MultiSourceParser<T extends Capture.ObjectCapture> {
         // do nothing
     }
 
+    public void registerImport(Source source, Source importedSource) {
+        importMapping.computeIfAbsent(source, (ignored) -> new HashSet<>()).add(importedSource);
+    }
+
     public void parseSourceDeferred(Source source) {
         if (!additionList.contains(source)) {
             additionList.add(source);
         }
+    }
+
+    public void parseSourceDeferred(Source importedSource, Source source) {
+        registerImport(source, importedSource);
+        parseSourceDeferred(importedSource);
     }
 
     public void parseSources() {
@@ -71,6 +81,10 @@ public abstract class MultiSourceParser<T extends Capture.ObjectCapture> {
         else {
             throw new IllegalArgumentException("No result for source " + source.toString());
         }
+    }
+
+    public Set<Source> getImports(Source source) {
+        return importMapping.getOrDefault(source, new HashSet<>());
     }
 
     public boolean hasError() {

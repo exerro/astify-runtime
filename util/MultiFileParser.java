@@ -16,26 +16,13 @@ public abstract class MultiFileParser<T extends Capture.ObjectCapture> extends M
     }
 
     public void parseFileDeferred(String filename) {
-        String resolvedFilePath = null;
-        List<String> basePaths = getBasePaths();
+        Source source = getFileSource(filename);
+        if (source != null) parseSourceDeferred(source);
+    }
 
-        for (String basePath : basePaths) {
-            if ((resolvedFilePath = resolveFilePath(filename, basePath)) != null) {
-                break;
-            }
-        }
-
-        if (resolvedFilePath != null) {
-            try {
-                parseSourceDeferred(new Source.FileSource(resolvedFilePath, filename));
-            }
-            catch (FileNotFoundException e) {
-                error(e);
-            }
-        }
-        else {
-            error(new FileNotFoundException("File '" + filename + "' not found\nLooked in:\n\t" + Util.concatList(basePaths, "\n\t")));
-        }
+    public void parseFileDeferred(String filename, Source source) {
+        Source importedSource = getFileSource(filename);
+        if (importedSource != null) parseSourceDeferred(importedSource, source);
     }
 
     public String resolveFilePath(String filename, String basePath) {
@@ -63,5 +50,30 @@ public abstract class MultiFileParser<T extends Capture.ObjectCapture> extends M
         public List<String> getBasePaths() {
             return Collections.singletonList(basePath);
         }
+    }
+
+    private Source getFileSource(String filename) {
+        String resolvedFilePath = null;
+        List<String> basePaths = getBasePaths();
+
+        for (String basePath : basePaths) {
+            if ((resolvedFilePath = resolveFilePath(filename, basePath)) != null) {
+                break;
+            }
+        }
+
+        if (resolvedFilePath != null) {
+            try {
+                return new Source.FileSource(resolvedFilePath, filename);
+            }
+            catch (FileNotFoundException e) {
+                error(e);
+            }
+        }
+        else {
+            error(new FileNotFoundException("File '" + filename + "' not found\nLooked in:\n\t" + Util.concatList(basePaths, "\n\t")));
+        }
+
+        return null;
     }
 }
