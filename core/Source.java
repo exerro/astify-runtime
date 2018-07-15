@@ -65,6 +65,12 @@ public abstract class Source {
                 return "";
             }
         }
+
+        @Override public boolean equals(Object other) {
+            if (!(other instanceof FileSource)) return false;
+            FileSource otherCasted = (FileSource) other;
+            return otherCasted.fileName.equals(fileName) && otherCasted.filePath.equals(filePath);
+        }
     }
 
     public static class VirtualSource extends Source {
@@ -84,6 +90,12 @@ public abstract class Source {
 
         @Override public String getContent() {
             return content;
+        }
+
+        @Override public boolean equals(Object other) {
+            if (!(other instanceof VirtualSource)) return false;
+            VirtualSource otherCasted = (VirtualSource) other;
+            return otherCasted.name.equals(name) && otherCasted.content.equals(content);
         }
     }
 
