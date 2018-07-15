@@ -1,10 +1,7 @@
 package astify.util;
 
-import astify.*;
-import astify.core.Source;
-import astify.token.DefaultTokenGenerator;
-import astify.token.TokenException;
-import astify.token.TokenGenerator;
+import astify.core.Position;
+import astify.core.Positioned;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +38,13 @@ public class Util {
         return ts -> map(func, ts);
     }
 
+
+    public static Position getListSpanningPosition(List<Positioned> elements) {
+        if (elements.isEmpty())
+            throw new IllegalArgumentException("cannot find spanning position of empty list");
+
+        return elements.get(0).getPosition().to(elements.get(elements.size() - 1).getPosition());
+    }
 
 
     public static String unformatString(String str) {
