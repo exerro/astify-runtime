@@ -50,7 +50,9 @@ public abstract class MultiSourceParser<T extends Capture.ObjectCapture> {
                 Source source = additionList.get(firstUnresolved++);
                 T result = parseSource(source);
                 parsed.put(source, result);
-                onSourceParsed(source, result);
+
+                if (result != null)
+                    onSourceParsed(source, result);
             }
             catch (ParserException | TokenException e) {
                 error(e);
